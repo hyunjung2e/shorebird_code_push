@@ -5,7 +5,10 @@ import 'package:shorebird_code_push/shorebird_code_push.dart';
 
 final _shorebirdCodePush = ShorebirdCodePush();
 
-void main() => runApp(const MyApp());
+Future<void> main() async {
+  Fimber.plantTree(DebugTree());
+  runApp(const MyApp());
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -14,10 +17,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Shorebird',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
-        useMaterial3: true,
-      ),
+      theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.red), useMaterial3: true),
       home: const MyHomePage(title: 'Shorebird 코드 푸시 테스트'),
     );
   }
@@ -40,52 +40,31 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    // Request the current patch number.
     _shorebirdCodePush.currentPatchNumber().then((currentPatchVersion) {
       if (!mounted) return;
-      setState(() {
-        _currentPatchVersion = currentPatchVersion;
-      });
+      setState(() => _currentPatchVersion = currentPatchVersion);
     });
   }
 
   Future<void> _checkForUpdate() async {
-    setState(() {
-      _isCheckingForUpdate = true;
-    });
-
-    // Ask the Shorebird servers if there is a new patch available.
+    setState(() => _isCheckingForUpdate = true);
     final isUpdateAvailable = await _shorebirdCodePush.isNewPatchAvailableForDownload();
-
     if (!mounted) return;
-
-    setState(() {
-      _isCheckingForUpdate = false;
-    });
+    setState(() => _isCheckingForUpdate = false);
 
     if (isUpdateAvailable) {
       _showUpdateAvailableBanner();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No update available'),
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('최신 버전입니다.')));
     }
   }
 
   void _showDownloadingBanner() {
     ScaffoldMessenger.of(context).showMaterialBanner(
       const MaterialBanner(
-        content: Text('Downloading...'),
+        content: Text('다운로드 중..'),
         actions: [
-          SizedBox(
-            height: 14,
-            width: 14,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-            ),
-          ),
+          SizedBox(height: 14, width: 14, child: CircularProgressIndicator(strokeWidth: 2)),
         ],
       ),
     );
@@ -94,17 +73,16 @@ class _MyHomePageState extends State<MyHomePage> {
   void _showUpdateAvailableBanner() {
     ScaffoldMessenger.of(context).showMaterialBanner(
       MaterialBanner(
-        content: const Text('Update available'),
+        content: const Text('업데이트가 필요합니다.'),
         actions: [
           TextButton(
             onPressed: () async {
               ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
               await _downloadUpdate();
-
               if (!mounted) return;
               ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
             },
-            child: const Text('Download'),
+            child: const Text('다운로드'),
           ),
         ],
       ),
@@ -114,12 +92,12 @@ class _MyHomePageState extends State<MyHomePage> {
   void _showRestartBanner() {
     ScaffoldMessenger.of(context).showMaterialBanner(
       const MaterialBanner(
-        content: Text('A new patch is ready!'),
+        content: Text('패치가 완료되었습니다.'),
         actions: [
           TextButton(
             // Restart the app for the new patch to take effect.
             onPressed: Restart.restartApp,
-            child: Text('Restart app'),
+            child: Text('앱 재시작'),
           ),
         ],
       ),
@@ -143,12 +121,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    Fimber.d('_isShorebirdAvailable 여부는? $_isShorebirdAvailable');
-    Fimber.d('_currentPatchVersion 정보는? $_currentPatchVersion');
-    Fimber.d('_isCheckingForUpdate 여부는? $_isCheckingForUpdate');
+    Fimber.d('_isShorebirdAvailable 여부는? $_isShorebirdAvailable'); // false
+    Fimber.d('_currentPatchVersion 정보는? $_currentPatchVersion'); // null
+    Fimber.d('_isCheckingForUpdate 여부는? $_isCheckingForUpdate'); // 업데이트 여부 체크중
 
     final theme = Theme.of(context);
-    final heading = _currentPatchVersion != null ? '$_currentPatchVersion' : 'No patch installed';
+    final heading = _currentPatchVersion != null ? '$_currentPatchVersion' : '설치된 버전이 없습니다.';
     return Scaffold(
       appBar: AppBar(
         backgroundColor: theme.colorScheme.inversePrimary,
@@ -158,23 +136,14 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('Current patch version:'),
-            Text(
-              heading,
-              style: theme.textTheme.headlineMedium,
-            ),
+            const Text('현재 패치 버전:'),
+            Text(heading, style: theme.textTheme.headlineMedium),
             const SizedBox(height: 20),
-            if (!_isShorebirdAvailable)
-              Text(
-                'Shorebird Engine not available.',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.error,
-                ),
-              ),
+            if (!_isShorebirdAvailable) Text('Shorebird 엔진이 꺼진 상태입니다.', style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.error)),
             if (_isShorebirdAvailable)
               ElevatedButton(
                 onPressed: _isCheckingForUpdate ? null : _checkForUpdate,
-                child: _isCheckingForUpdate ? const _LoadingIndicator() : const Text('Check for update'),
+                child: _isCheckingForUpdate ? const _LoadingIndicator() : const Text('업데이트 확인하기'),
               ),
           ],
         ),
@@ -188,10 +157,6 @@ class _LoadingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox(
-      height: 14,
-      width: 14,
-      child: CircularProgressIndicator(strokeWidth: 2),
-    );
+    return const SizedBox(height: 14, width: 14, child: CircularProgressIndicator(strokeWidth: 2));
   }
 }
