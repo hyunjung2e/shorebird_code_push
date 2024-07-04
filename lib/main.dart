@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Shorebird',
-      theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.yellow), useMaterial3: true),
+      theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.red), useMaterial3: true),
       home: const MyHomePage(title: 'Shorebird 코드 푸시 테스트'),
     );
   }
